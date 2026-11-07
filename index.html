@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Shared Sonority</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Fraunces:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;500&display=swap">
+<style>
+:root{--bg:#000;--ink:#e9edff;--muted:#9aa6d6;--tulip:#6f8bff;--tulip-soft:#aab9ff;--venom:#0a0d1c;--line:#1b2247;color-scheme:dark;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#000;--ink:#e9edff;--muted:#9aa6d6;--tulip:#6f8bff;--tulip-soft:#aab9ff;--venom:#0a0d1c;--line:#1b2247}}
+:root[data-theme="dark"]{--bg:#000;--ink:#e9edff;--muted:#9aa6d6;--tulip:#6f8bff;--tulip-soft:#aab9ff;--venom:#0a0d1c;--line:#1b2247}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;background:radial-gradient(60rem 30rem at 50% -10%,#141b44 0%,var(--venom) 40%,var(--bg) 75%) no-repeat,var(--bg);color:var(--ink);font:400 1rem/1.6 "DM Sans",system-ui,sans-serif}
+main{max-width:600px;margin:0 auto;padding:3.5rem 1.25rem 4rem;text-align:center}
+h1{font:700 clamp(2.2rem,9vw,3.4rem)/1.1 "Fraunces",Georgia,serif;margin:0 0 .5rem;letter-spacing:-.02em;color:#fff}
+h1 em{font-style:italic;font-weight:400;color:var(--tulip)}
+.stage{perspective:700px;height:72px;margin:0 auto 1rem;overflow:visible}
+.cube{position:relative;width:100%;height:72px;transform-style:preserve-3d;transform:translateZ(-36px)}
+.face{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;backface-visibility:hidden;-webkit-backface-visibility:hidden;font:600 clamp(1.8rem,7vw,2.4rem)/1 "Dancing Script","Segoe Script",cursive,system-ui,sans-serif;color:var(--tulip-soft)}
+.face.a{transform:translateZ(36px)}
+.face.b{transform:rotateX(-90deg) translateZ(36px)}
+.desc{width:100%;margin:0 0 1.25rem;color:var(--muted);font-size:.92rem;line-height:1.7;text-align:justify;text-justify:inter-word;hyphens:auto}
+.field{position:relative;border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,#080b18,#03040a);box-shadow:inset 0 1px 0 rgba(170,185,255,.08);transition:border-color .2s}
+.field:focus-within,.field.decoded{border-color:var(--tulip)}
+.field.err{border-color:#ff6f8b}
+textarea{display:block;width:100%;height:9rem;min-height:5rem;padding:1rem 1.1rem;background:transparent;color:var(--ink);border:0;outline:0;resize:none;text-align:left;font:.9rem/1.6 "DM Sans",system-ui,sans-serif;border-radius:18px}
+textarea::placeholder{color:#5c6896}
+.field.decoded textarea{color:#fff;font:400 .9rem/1.6 "DM Sans",system-ui,sans-serif}
+.field.err textarea{color:#ffb3c1}
+.hold{position:relative;overflow:hidden;display:block;width:100%;margin-top:1rem;padding:.95rem 1.5rem;background:#05070f;color:#fff;border:1px solid var(--tulip);border-radius:999px;font:500 1.05rem "DM Sans",system-ui,sans-serif;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.hold:focus-visible{outline:2px solid var(--tulip);outline-offset:3px}
+.fill{position:absolute;inset:0;border-radius:0;background:linear-gradient(90deg,#3f5bde,#5873f2);transform:translateX(-101%);will-change:transform}
+.lbl{position:relative}
+</style>
+</head>
+<body>
+<main>
+<h1>Shared <em>Sonority</em></h1>
+<div class="stage" aria-live="off"><div class="cube" id="cube"><div class="face a" id="fa">Welcome</div><div class="face b" id="fb"></div></div></div>
+<p class="desc">A private decoder for our shared music archive. Paste the coded message below, then press and hold the button to read it. Let go and it hides again.</p>
+<div class="field" id="field">
+<textarea id="code" aria-label="Encrypted message" placeholder="Paste encrypted message here" autocomplete="off" spellcheck="false"></textarea>
+</div>
+<button class="hold" id="hold" type="button"><span class="fill" id="fill"></span><span class="lbl" id="lbl">Hold to reveal</span></button>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+<script>
+(function(){
+/* greeting cube */
+var words=['Welcome','欢迎','स्वागत है','Bienvenido','Bienvenue','ようこそ','Willkommen','환영합니다','Benvenuto','مرحبًا','Bem-vindo','Добро пожаловать'];
+var cube=document.getElementById('cube'),fa=document.getElementById('fa'),fb=document.getElementById('fb'),wi=0;
+var calm=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+setInterval(function(){
+  wi=(wi+1)%words.length;
+  if(calm){fa.textContent=words[wi];return;}
+  fb.textContent=words[wi];
+  cube.style.transition='transform .9s cubic-bezier(.7,0,.2,1)';
+  cube.style.transform='translateZ(-36px) rotateX(90deg)';
+  setTimeout(function(){
+    cube.style.transition='none';
+    cube.style.transform='translateZ(-36px)';
+    fa.textContent=words[wi];
+  },950);
+},2600);
+
+/* decoder */
+var BASE=0x4E00,N=20992n;
+var ta=document.getElementById('code'),field=document.getElementById('field');
+var btn=document.getElementById('hold'),fill=document.getElementById('fill'),lbl=document.getElementById('lbl');
+var st='idle',coded='';
+function decode(s){
+  s=s.replace(/\s/g,'');
+  if(!s)throw new Error('The text box is empty. Paste the encrypted message first.');
+  var n=0n;
+  for(var ch of s){var v=ch.codePointAt(0)-BASE;if(v<0||v>=20992)throw new Error('This isn’t a valid encrypted message. Check that you pasted all of it.');n=n*N+BigInt(v);}
+  var hex=n.toString(16);if(hex.length%2)hex='0'+hex;
+  var b=new Uint8Array(hex.length/2);
+  for(var i=0;i<b.length;i++)b[i]=parseInt(hex.substr(i*2,2),16);
+  try{return pako.inflateRaw(b.slice(1),{to:'string'});}
+  catch(e){throw new Error('This encrypted message couldn’t be decoded. Check that you pasted all of it.');}
+}
+function restore(){ta.value=coded;ta.readOnly=false;field.classList.remove('decoded','err');}
+
+/* slide: Apple-style easing in and out */
+var HOLDMS=1100,BACKMS=750,CANCELMS=600;
+var IN='cubic-bezier(.4,0,.2,1)',OUT='cubic-bezier(.32,.72,0,1)';
+var t1=0;
+function slide(ms,ease,q){fill.style.transition='transform '+ms+'ms '+ease;fill.style.transform='translateX('+(-101+101*q)+'%)';}
+function press(){
+  if(st==='holding'||st==='done')return;
+  st='holding';lbl.textContent='Keep holding…';
+  slide(HOLDMS,IN,1);
+  t1=setTimeout(finish,HOLDMS);
+}
+function finish(){
+  st='done';coded=ta.value;
+  try{ta.value=decode(coded);field.classList.add('decoded');}
+  catch(e){ta.value=e.message;field.classList.add('err');}
+  ta.readOnly=true;lbl.textContent='Release to hide';
+}
+function release(){
+  if(st==='holding'){clearTimeout(t1);st='idle';slide(CANCELMS,OUT,0);}
+  else if(st==='done'){restore();st='idle';slide(BACKMS,OUT,0);}
+  else return;
+  lbl.textContent='Hold to reveal';
+}
+btn.addEventListener('pointerdown',function(e){e.preventDefault();try{btn.setPointerCapture(e.pointerId);}catch(x){}press();});
+['pointerup','pointercancel','lostpointercapture'].forEach(function(t){btn.addEventListener(t,release);});
+btn.addEventListener('contextmenu',function(e){e.preventDefault();});
+btn.addEventListener('keydown',function(e){if((e.key===' '||e.key==='Enter')&&!e.repeat){e.preventDefault();press();}});
+btn.addEventListener('keyup',function(e){if(e.key===' '||e.key==='Enter'){e.preventDefault();release();}});
+btn.addEventListener('blur',release);
+window.addEventListener('blur',release);
+})();
+</script>
+</body>
+</html>
